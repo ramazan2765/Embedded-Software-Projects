@@ -1,27 +1,29 @@
-SensorNode Project
-Overview
 
-This project implements a professional IoT sensor node using STM32 (HAL + FreeRTOS) and ESP32 as an MQTT gateway.
-The STM32 collects data from sensors, applies filtering and calibration, and sends the results as JSON over UART.
-The ESP32 publishes the JSON to ThingSpeak (MQTT) for cloud visualization.
+# SensorNode Project
 
-Features
+##  Overview
 
-TMP102 temperature sensor
+This project implements a professional IoT sensor node using **STM32 (FreeRTOS)** and **ESP32** as an MQTT gateway.
+The STM32 collects data from sensors, applies filtering and calibration, and sends the results as **JSON over UART**.
+The ESP32 publishes the JSON to **ThingSpeak (MQTT)** for cloud visualization.
 
-MPU9250 accelerometer (X-axis)
+---
 
-RTC (real-time clock) timestamp
+##  Features
 
-Filtering: Moving Average (temperature), Exponential Moving Average (accelerometer)
+* TMP102 temperature sensor
+* MPU9250 accelerometer (X-axis)
+* RTC (real-time clock) timestamp
+* Filtering: **Moving Average (temperature)**, **Exponential Moving Average (accelerometer)**
+* JSON serialization
+* FreeRTOS tasks & queues
+* ESP32 MQTT client for ThingSpeak
 
-JSON serialization
+---
 
-FreeRTOS tasks & queues
+##  System Architecture
 
-ESP32 MQTT client for ThingSpeak
-
-System Architecture
+```mermaid
 flowchart LR
     TMP102[Temperature Sensor TMP102]
     MPU9250[Accelerometer MPU9250]
@@ -35,8 +37,13 @@ flowchart LR
     RTC --> STM32
     STM32 -->|UART + JSON| ESP32
     ESP32 -->|MQTT Publish| Cloud
+```
 
-Project Structure
+---
+
+##  Project Structure
+
+```plaintext
 project-root/
 │
 ├── CMakeLists.txt           # Main CMake file
@@ -58,63 +65,76 @@ project-root/
 │   └── startup_stm32fxxx.s
 └── linker/
     └── STM32Fxxx_FLASH.ld
+```
 
-Build
+---
+
+##  Build
+
+```bash
 git clone https://github.com/yourusername/SensorNode.git
 cd SensorNode
 mkdir build && cd build
 cmake .. -G "Ninja"
 ninja
+```
 
-Flashing
+---
 
-Using OpenOCD
+##  Flashing
 
+**Using OpenOCD**
+
+```bash
 openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
         -c "program build/SensorNode.elf verify reset exit"
+```
 
+**Using STM32CubeProgrammer**
 
-Using STM32CubeProgrammer
-
+```bash
 STM32_Programmer_CLI -c port=SWD -w build/SensorNode.hex
+```
 
-ThingSpeak Visualization
+---
+
+##  ThingSpeak Visualization
 
 The ESP32 sends JSON data to ThingSpeak every 15 seconds.
 
-Example JSON from STM32:
+**Example JSON from STM32:**
 
+```json
 {
   "temperature": 20.94,
   "acceleration_x": -0.050,
   "timestamp_ms": 1079373,
   "timestamp_date": "2025-10-14 10:33:00"
 }
+```
 
+**ThingSpeak fields:**
 
-ThingSpeak fields:
+* Field 1 → Temperature (°C)
+* Field 2 → Acceleration X (g)
+* Field 3 → Timestamp (optional)
 
-Field 1 → Temperature (°C)
+---
 
-Field 2 → Acceleration X (g)
+##  ESP32 MQTT Client
 
-Field 3 → Timestamp (optional)
+The ESP32 receives JSON data from STM32 via UART and publishes it to **ThingSpeak MQTT**.
 
-ESP32 MQTT Client
+### Features
 
-The ESP32 receives JSON data from STM32 via UART and publishes it to ThingSpeak MQTT.
+* Reads UART2 (GPIO16 = RX, GPIO17 = TX)
+* Parses JSON using ArduinoJson
+* Publishes to ThingSpeak every 15 seconds
+* Handles WiFi + MQTT reconnect (via `client.loop()`)
 
-Features
+### Example `main.ino`
 
-Reads UART2 (GPIO16 = RX, GPIO17 = TX)
-
-Parses JSON using ArduinoJson
-
-Publishes to ThingSpeak every 15 seconds
-
-Handles WiFi + MQTT reconnect (via client.loop())
-
-Example main.ino
+```cpp
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -173,11 +193,20 @@ void loop() {
   }
   client.loop(); // keep MQTT connection alive
 }
+```
 
-Author
+---
 
-Developed by Ramazan YÜCEL
+## 👤 Author
 
-GitHub
+Developed by **Ramazan YÜCEL**
 
-LinkedIn
+* 💻 [GitHub](https://github.com/ramazan2765)
+* 🔗 [LinkedIn](https://www.linkedin.com/in/ramazanyucel)
+
+---
+
+##  License
+
+This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
+
