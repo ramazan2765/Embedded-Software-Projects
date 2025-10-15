@@ -1,0 +1,2 @@
+../Core/Drivers/filter.c:6:7:moving_average	24	static
+../Core/Drivers/filter.c:24:7:ema_filter	24	static

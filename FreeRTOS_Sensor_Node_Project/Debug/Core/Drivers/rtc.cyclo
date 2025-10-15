@@ -1,0 +1,3 @@
+../Core/Drivers/rtc.c:10:6:RTC_Init	1
+../Core/Drivers/rtc.c:26:6:RTC_SetTimeAndDate	3
+../Core/Drivers/rtc.c:54:6:RTC_GetTimestamp	1
