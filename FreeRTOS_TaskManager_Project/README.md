@@ -72,81 +72,9 @@ flowchart TD
     Button["User Button (PC15)"] -->|"EXTI ISR give"| Semaphore_Button
 ```
 
-
-
-Tasks
-TaskSensor
-
-Priority: osPriorityHigh
-
-Period: 50 ms (20 Hz)
-
-Function: Reads MPU9250 and TMP102 sensors sequentially
-
-Shared resource: I2C_Mutex
-
-Output: Queue_SensorData
-
-Struct: { accel, gyro, temp, ts }
-
-TaskButton
-
-Priority: osPriorityAboveNormal
-
-Trigger: BinarySemaphore_Button (EXTI ISR give)
-
-Function:
-
-Counts button presses / increments counter
-
-Handles “mode toggle”
-
-Sends result to Queue_Events
-
-TaskUart
-
-Priority: osPriorityNormal
-
-Input:
-
-Queue_SensorData
-
-Queue_Events
-
-Function: Sends sensor and event data to PC as line-based JSON/CSV logs
-
-TaskLed
-
-Priority: osPriorityLow
-
-Function: Indicates system status via LED
-
-Green: Normal beat
-
-Orange: Button event
-
-Red: Error state
-
-Queues
-
-Queue_SensorData
-
-Length: 10
-
-Item size: Sensor packet struct
-
-Queue_Events
-
-Length: 10
-
-Item size: Event struct (e.g., { type, ts })
-
-Mutexes / Semaphores
-
-I2C_Mutex
-
-Ensures exclusive access to MPU9250 & TMP102
-
-BinarySemaphore_Button
-
-Used for synchronization from ISR to task
+| Task           | Priority                              | Trigger / Period                    | Input                              | Output             | Function                                                       |
+| -------------- | ------------------------------------- | ----------------------------------- | ---------------------------------- | ------------------ | -------------------------------------------------------------- |
+| **TaskSensor** | High (`osPriorityHigh`)               | 50 ms (20 Hz)                       | –                                  | `Queue_SensorData` | Read MPU9250 & TMP102 (sequential)                             |
+| **TaskButton** | AboveNormal (`osPriorityAboveNormal`) | `BinarySemaphore_Button` (EXTI ISR) | –                                  | `Queue_Events`     | Count button presses / mode toggle                             |
+| **TaskUart**   | Normal (`osPriorityNormal`)           | –                                   | `Queue_SensorData`, `Queue_Events` | PC UART            | Send logs as line-based JSON/CSV                               |
+| **TaskLed**    | Low (`osPriorityLow`)                 | –                                   | –                                  | LED status         | Indicate system state (green/normal, orange/button, red/error) |
