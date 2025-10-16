@@ -78,3 +78,15 @@ flowchart TD
 | **TaskButton** | AboveNormal (`osPriorityAboveNormal`) | `BinarySemaphore_Button` (EXTI ISR) | –                                  | `Queue_Events`     | Count button presses / mode toggle                             |
 | **TaskUart**   | Normal (`osPriorityNormal`)           | –                                   | `Queue_SensorData`, `Queue_Events` | PC UART            | Send logs as line-based JSON/CSV                               |
 | **TaskLed**    | Low (`osPriorityLow`)                 | –                                   | –                                  | LED status         | Indicate system state (green/normal, orange/button, red/error) |
+
+
+| Queue                | Length | Item size                                        | Notes                    |
+| -------------------- | ------ | ------------------------------------------------ | ------------------------ |
+| **Queue_SensorData** | 10     | Sensor packet struct `{ accel, gyro, temp, ts }` | Produced by `TaskSensor` |
+| **Queue_Events**     | 10     | Event struct `{ type, ts }`                      | Produced by `TaskButton` |
+
+
+| Name                       | Type             | Usage                                         |
+| -------------------------- | ---------------- | --------------------------------------------- |
+| **I2C_Mutex**              | Mutex            | Protects access to MPU9250 & TMP102           |
+| **BinarySemaphore_Button** | Binary Semaphore | Synchronization from EXTI ISR to `TaskButton` |
