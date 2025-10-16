@@ -355,48 +355,6 @@ static void MX_GPIO_Init(void)
 /* ------------------------------------------------------------------ */
 /* SensorTask: generates fake sensor values and puts them in the queue*/
 /* ------------------------------------------------------------------ */
-/*void SensorTask(void *pvParameters) {
-    SensorPacket packet;
-    float ax = 0.0f;
-
-    for (;;) {
-        // Reset valid flags at each cycle
-        memset(&packet, 0, sizeof(packet));  // tüm alanları temizle
-
-        // --- Temperature (TMP102) ---
-        float temp = 0.0f;
-        if (TMP102_ReadTemperature(&hi2c1, &temp) == HAL_OK) {
-            packet.temperature = temp;
-            packet.valid |= V_TEMP;
-        } else {
-            uart_safe_print("Temperature (TMP102) read failed!\r\n");
-        }
-
-        // --- Timestamp ---
-        packet.timestamp_ms = HAL_GetTick();      // ms cinsinden
-        RTC_GetTimestamp(packet.timestamp_str, sizeof(packet.timestamp_str));  // tarih-saat
-        packet.valid |= V_TIME;
-
-        // --- Gyroscope / Accelerometer (MPU9250) ---
-        if (MPU9250_ReadAccelX(&hi2c1, &ax) == HAL_OK) {
-            packet.acceleration_x = ax;
-            packet.valid |= V_ACCEL_X;
-        } else {
-            uart_safe_print("MPU9250 accel X read failed!\r\n");
-        }
-
-        // --- Kuyruğa gönder ---
-        if (xQueueSend(sensorQueue, &packet, portMAX_DELAY) != pdPASS) {
-            uart_safe_print("SensorTask: Queue send failed!\r\n");
-        }
-
-        // --- Delay ---
-        vTaskDelay(pdMS_TO_TICKS(2000)); // 2 saniyede bir ölçüm
-    }
-}*/
-
-
-
 void SensorTask(void *pvParameters) {
     SensorPacket packet;
 
