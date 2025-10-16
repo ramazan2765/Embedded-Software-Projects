@@ -70,7 +70,7 @@ flowchart TD
 
     TaskLed -->|"GPIO"| LEDs["Status LEDs"]
     Button["User Button (PC15)"] -->|"EXTI ISR give"| Semaphore_Button
-
+```
 
 
 
