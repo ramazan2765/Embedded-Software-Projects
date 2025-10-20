@@ -1,0 +1,10 @@
+../Core/Src/main.c:93:5:main	16	static
+../Core/Src/main.c:149:6:SystemClock_Config	88	static
+../Core/Src/main.c:196:13:MX_USART1_UART_Init	8	static
+../Core/Src/main.c:229:13:MX_GPIO_Init	16	static
+../Core/Src/main.c:249:6:vLoggerTask	72	static
+../Core/Src/main.c:262:6:vSensorTask	72	static
+../Core/Src/main.c:279:6:vCommTask	64	static
+../Core/Src/main.c:292:6:vEmergencyTask	80	static
+../Core/Src/main.c:320:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:338:6:Error_Handler	4	static,ignoring_inline_asm
