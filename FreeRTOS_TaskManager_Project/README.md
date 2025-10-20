@@ -1,110 +1,92 @@
+# STM32F411 FreeRTOS Multitask Demo
 
-# Embedded Software Projects
+## Project Overview
+This project demonstrates **real-time multitasking** on the STM32F411 microcontroller using **FreeRTOS**.  
+The application showcases the integration of multiple concurrent tasks:
+- Sensor data acquisition (MPU9250 + TMP102 via I2C)
+- User button interrupt handling
+- Data logging over UART to PC
+- System state indication through onboard LEDs  
 
-**Overview**
-This repository is a collection of professional **embedded software projects** developed to demonstrate expertise in low-level programming, real-time operating systems, hardware communication, and IoT solutions.
-The projects cover a wide range of technologies, from bare-metal firmware to FreeRTOS-based applications and advanced communication protocols.
-
-The goal is to provide clear, practical examples that reflect industry-grade design, coding standards, and problem-solving approaches used in embedded systems engineering.
-
----
-
-**Objectives**
-
-* Showcase expertise in **STM32, ESP32, ARM Cortex-M microcontrollers**
-* Demonstrate skills in **bare-metal programming** as well as **RTOS-based systems**
-* Provide real-world implementations of **communication protocols** and **IoT connectivity**
-* Share best practices for **scalable, modular embedded software design**
-* Present professional, documented projects that can be applied in industrial contexts
+The purpose is to highlight how FreeRTOS primitives such as the **task scheduler, queues, mutexes, and binary semaphores** can be used in an embedded environment.
 
 ---
 
-**Technologies & Topics**
-This repository includes projects and code examples in areas such as:
-
-* Real-Time Operating Systems
-
-  * FreeRTOS: tasks, queues, semaphores, synchronization
-  * Task scheduling and memory management
-
-* Bare-Metal Programming
-
-  * Low-level driver development (GPIO, UART, SPI, I2C, TIM, ADC, DMA)
-  * Interrupt-driven applications
-  * Bootloader development
-
-* Communication Protocols
-
-  * UART, SPI, I2C, CAN, USB, CAN, ETHERNET
-  * Custom protocol implementation
-  * Sensor and peripheral interfacing
-
-* IoT & Networking
-
-  * ESP32 WiFi and MQTT communication
-  * Cloud integration (ThingSpeak, AWS IoT, Azure)
-  * JSON serialization and parsing
-
-* Signal Processing & Data Handling
-
-  * Sensor calibration and filtering (moving average, EMA)
-  * Timestamping with RTC
-  * Data logging and structuring
-
-* System Design
-
-  * Modular and layered project structure
-  * Hardware–software co-design
-  * Low-power design strategies
+## Hardware
+- **MCU**: STM32F411CEU6 (48-pin, e.g., Black Pill board)  
+- **Sensors**:  
+  - MPU9250 (Accelerometer + Gyroscope, I2C)  
+  - TMP102 (Temperature sensor, I2C)  
+- **User Button**: PC15 (external interrupt)  
+- **Status LEDs**: PA1, PA2, PA3 (GPIO outputs)  
+- **UART**: USART1 (PA9/PA10 → USB-TTL adapter or ST-Link VCP)  
+- **Pull-up resistors**: 4.7kΩ for I2C SCL/SDA (if not already included on the sensor modules)  
 
 ---
 
-**Repository Structure**
-Each project has its own directory with:
+## Pin Mapping
 
-* Source code (C/C++)
-* Drivers (HAL or custom bare-metal)
-* FreeRTOS
-* Documentation (README, diagrams, flowcharts)
-* Build instructions (CMake, Makefile, or PlatformIO)
-
----
-
-**Example Projects**
-
-* Sensor Node – STM32 + FreeRTOS sensor node, ESP32 MQTT gateway, ThingSpeak visualization
-* Bootloader – Custom STM32 bootloader with UART/SPI flashing support
-* Communication Examples – SPI, I2C, UART protocols implemented from scratch
-* FreeRTOS Demos – Task scheduling, inter-task communication, synchronization primitives
-* Data Logging – RTC-based logging and external memory storage
-* Peripheral Drivers – Custom drivers for sensors and external ICs
+| Peripheral   | Pin(s) | Description                  |
+|--------------|--------|------------------------------|
+| **I2C1_SCL** | PB8    | Sensor I2C Clock             |
+| **I2C1_SDA** | PB9    | Sensor I2C Data              |
+| **USART1_TX**| PA9    | UART transmit to PC          |
+| **USART1_RX**| PA10   | UART receive from PC         |
+| **LED1**     | PA1    | Status LED (Green)           |
+| **LED2**     | PA2    | Status LED (Orange)          |
+| **LED3**     | PA3    | Status LED (Red)             |
+| **User Button** | PC15| External button (EXTI input) |
 
 ---
 
-**Tools & Environment**
+## System Architecture
 
-* MCUs: STM32F4/F1, ESP32, ARM Cortex-M series
-* Languages: C, C++, Embedded C++
-* Build Systems: CMake, Makefile, PlatformIO
-* Debugging Tools: ST-Link, OpenOCD, STM32CubeProgrammer
-* IDE/Editors: VS Code, STM32CubeIDE, CLion
+```mermaid
+flowchart TD
 
----
+    subgraph RTOS_Scheduler["FreeRTOS Scheduler"]
+        direction TB
 
-**Vision**
-This repository is continuously updated with new projects covering more advanced embedded system concepts. The long-term goal is to create a **comprehensive portfolio** that reflects:
+        TaskSensor["TaskSensor\n(Read MPU9250 & TMP102 via I2C)"]
+        TaskButton["TaskButton\n(Handle Button Events)"]
+        TaskUart["TaskUart\n(Send Data to PC via UART)"]
+        TaskLed["TaskLed\n(Update Status LEDs)"]
+    end
 
-* Depth of technical expertise
-* Problem-solving capabilities
-* Adaptability to different embedded environments
-* Professional coding and documentation practices
+    I2C_Mutex["Mutex: I2C_Mutex"]
+    Queue_SensorData["Queue: SensorData"]
+    Queue_Events["Queue: Events"]
+    Semaphore_Button["Binary Semaphore: Button"]
 
----
+    TaskSensor -->|acquire| I2C_Mutex
+    I2C_Mutex -->|release| TaskSensor
+    TaskSensor --> Queue_SensorData
+    TaskButton --> Queue_Events
+    Semaphore_Button --> TaskButton
 
-**Author**
-Developed by **Ramazan YÜCEL**
+    Queue_SensorData --> TaskUart
+    Queue_Events --> TaskUart
+    TaskUart -->|"UART TX"| PC["PC Terminal"]
 
-* GitHub: [yourusername](https://github.com/ramazan2765)
-* LinkedIn: [yourprofile](https://www.linkedin.com/in/ramazanyucel)
+    TaskLed -->|"GPIO"| LEDs["Status LEDs"]
+    Button["User Button (PC15)"] -->|"EXTI ISR give"| Semaphore_Button
+```
+
+| Task           | Priority                              | Trigger / Period                    | Input                              | Output             | Function                                                       |
+| -------------- | ------------------------------------- | ----------------------------------- | ---------------------------------- | ------------------ | -------------------------------------------------------------- |
+| **TaskSensor** | High (`osPriorityHigh`)               | 50 ms (20 Hz)                       | –                                  | `Queue_SensorData` | Read MPU9250 & TMP102 (sequential)                             |
+| **TaskButton** | AboveNormal (`osPriorityAboveNormal`) | `BinarySemaphore_Button` (EXTI ISR) | –                                  | `Queue_Events`     | Count button presses / mode toggle                             |
+| **TaskUart**   | Normal (`osPriorityNormal`)           | –                                   | `Queue_SensorData`, `Queue_Events` | PC UART            | Send logs as line-based JSON/CSV                               |
+| **TaskLed**    | Low (`osPriorityLow`)                 | –                                   | –                                  | LED status         | Indicate system state (green/normal, orange/button, red/error) |
 
 
+| Queue                | Length | Item size                                        | Notes                    |
+| -------------------- | ------ | ------------------------------------------------ | ------------------------ |
+| **Queue_SensorData** | 10     | Sensor packet struct `{ accel, gyro, temp, ts }` | Produced by `TaskSensor` |
+| **Queue_Events**     | 10     | Event struct `{ type, ts }`                      | Produced by `TaskButton` |
+
+
+| Name                       | Type             | Usage                                         |
+| -------------------------- | ---------------- | --------------------------------------------- |
+| **I2C_Mutex**              | Mutex            | Protects access to MPU9250 & TMP102           |
+| **BinarySemaphore_Button** | Binary Semaphore | Synchronization from EXTI ISR to `TaskButton` |
