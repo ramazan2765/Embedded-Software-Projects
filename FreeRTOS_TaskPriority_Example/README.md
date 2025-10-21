@@ -101,10 +101,9 @@ This repository is continuously updated with new projects covering more advanced
 
 ---
 
-**Author**
+## 👤 Author
+
 Developed by **Ramazan YÜCEL**
 
-* GitHub: [yourusername](https://github.com/ramazan2765)
-* LinkedIn: [yourprofile](https://www.linkedin.com/in/ramazanyucel)
-
-
+* 💻 [GitHub](https://github.com/ramazan2765)
+* 🔗 [LinkedIn](https://www.linkedin.com/in/ramazanyucel)
